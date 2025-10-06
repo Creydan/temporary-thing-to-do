@@ -57,8 +57,8 @@ systemctl disable --now bind
 apt-get update
 apt-get install dnsmasq -y
 systemctl enable --now dnsmasq
-sed -i '/^[@#]/ d' /etc/dnsmasq.conf
-echo -e "no-resolv\ndomain=au-team.irpo\nserver=8.8.8.8\ninterface=*\n" >> /etc/dnsmasq.conf
+sed -i '/^[@#]/ d' /etc/dnsmasq.conf && sed -i '/^$/d' /etc/dnsmasq.conf
+echo -e "\nno-resolv\ndomain=au-team.irpo\nserver=8.8.8.8\ninterface=*\n" >> /etc/dnsmasq.conf
 echo -e "address=/hq-rtr.au-team.irpo/192.168.1.1\nptr-record=1.1.168.192.in-addr.arpa,hq-rtr.au-team.irpo" >> /etc/dnsmasq.conf
 echo -e "address=/br-rtr.au-team.irpo/192.168.2.1" >> /etc/dnsmasq.conf
 echo -e "address=/hq-srv.au-team.irpo/192.168.1.10\nptr-record=10.1.168.192.in-addr.arpa,hq-srv.au-team.irpo" >> /etc/dnsmasq.conf
