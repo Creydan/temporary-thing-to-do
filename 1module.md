@@ -23,7 +23,9 @@ systemctl restart network iptables
 apt-get install tzdata
 timedatectl set-timezone Asia/Yekaterinburg 
 ```
+
 ---
+
 # HQ-SRV
 ## Базовая настройка
 ```bash
@@ -71,6 +73,9 @@ echo -e "address=/docker.au-team.irpo/172.16.2.1\naddress=/web.au-team.irpo/172.
 ```bash
 timedatectl set-timezone Asia/Yekaterinburg 
 ```
+
+---
+
 # BR-SRV
 ## Базовая настройка
 ```bash
@@ -103,6 +108,9 @@ echo nameserver 8.8.8.8 > /etc/resolv.conf
 ```bash
 timedatectl set-timezone Asia/Yekaterinburg 
 ```
+
+---
+
 # HQ-CLI
 ## Базовая настройка
 ```bash
@@ -126,6 +134,9 @@ systemctl restart network
 ```bash
 timedatectl set-timezone Asia/Yekaterinburg 
 ```
+
+---
+
 # HQ-RTR
 ## Базовая настройка
 ```cisco
@@ -259,6 +270,9 @@ conf t
 ntp timezone utc+5 
 exit
 ```
+
+---
+
 # BR-RTR
 ## Базовая настройка
 ```cisco
