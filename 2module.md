@@ -68,7 +68,45 @@ sss_cache -E
 systemctl restart sssd
 ```
 
+---
 
+# Сконфигурировать файловое хранилище
+## HQ-SRV
+```bash
+apt-get update && apt-get install fdisk mdadm -y
+mdadm --create /dev/md0 --level=0 --raid-devices=2 /dev/sd{b,c}
+mdadm --detail -scan --verbose > /etc/mdadm.conf
+echo -e "n\np\n1\n2048\n4186111\nw" | fdisk /dev/md0
+mkfs.ext4 /dev/md0p1
+echo "/dev/md0p1  /raid  ext4  defaults  0  0" >> /etc/fstab
+mkdir /raid
+mount -a
+mount -v
+```
+
+---
+
+# Настроить сетевую файловую систему
+## HQ-SRV
+```bash
+apt-get update && install nfs-server -y
+mkdir /raid/nfs
+chown 99:99 /raid/nfs
+chmod 777 /raid/nfs
+echo "/raid/nfs  192.168.2.10/28(rw,sync,no_subtree_check)" >> /etc/exports
+exportfs -a
+exportfs -v
+systemctl enable nfs && systemctl restart nfs
+```
+## HQ-CLI
+```bash
+apt-get update && apt-get install nfs-server -y
+mkdir -p /mnt/nfs
+echo "192.168.1.10:/raid/nfs  /mnt/nfs  nfs  defaults  0  0" >> /etc/fstab
+mount -a
+mount -v
+touch /mnt/nfs/test
+```
 
 
 
