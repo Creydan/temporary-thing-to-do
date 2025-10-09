@@ -108,9 +108,63 @@ mount -v
 touch /mnt/nfs/test
 ```
 
+---
 
+# Настроить chrony
+## ISP
+```bash
+apt-get update && apt-get install -y chrony
+echo -e "server 127.0.0.1 iburst prefer\nhwtimestamp *\nlocal stratum 5\nallow all" > /etc/chrony.conf
+systemctl enable --now chronyd
+systemctl restart chronyd
+chronyc sources
+```
+## HQ-RTR
+```cisco
+en
+conf
+ntp server 172.16.1.1
+ntp timezone utc+5
+end
+wr
+show ntp status
+```
+## BR-RTR
+```cisco
+en
+conf
+ntp server 172.16.2.1
+ntp timezone utc+5
+end
+wr
+show ntp status
+```
+## HQ-SRV
+```bash
+apt-get install -y chrony
+echo "server 172.16.1.1 iburst prefer" > /etc/chrony.conf
+systemctl enable --now chronyd
+systemctl restart chronyd
+chronyc sources
+```
+## HQ-CLI
+```bash
+apt-get install -y chrony
+echo "server 172.16.4.1 iburst prefer" > /etc/chrony.conf
+systemctl enable --now chronyd
+systemctl restart chronyd
+chronyc sources
+```
+## BR-SRV
+```bash
+apt-get install -y chrony
+echo "server 172.16.2.1 iburst prefer" > /etc/chrony.conf
+systemctl enable --now chronyd
+systemctl restart chronyd
+chronyc sources
+```
 
-
+---
 
 # Сконфигурировать ansible на BR-SRV
 ## HQ-CLI
@@ -123,8 +177,6 @@ echo -e "P@ssw0rd\nP@ssw0rd" | passwd sshuser
 systemctl restart sshd network
 ```
 
----
-
 ## BR-SRV
 ```bash
 apt-get update && apt-get install ansible sshpass -y
@@ -134,4 +186,82 @@ echo -e "[defaults]\ninterpreter_python=auto_silent\nhost_key_checking=false" > 
 ansible all -m ping
 ```
 
+---
+
 # Развернуть веб-приложение в docker BR-SRV
+## BR-SRV
+```bash
+apt-get update && apt-get install docker-compose docker-engine -y
+systemctl enable --now docker && systemctl restart docker
+mkdir /test
+mount -o loop /dev/sr0 /test
+docker load -i /test/docker/mariadb_latest.tar
+docker load -i /test/docker/site_latest.tar
+cat << EOF > /root/wiki.yml
+services:
+  db:
+    image: mariadb
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: Passw0rd
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: test
+      MYSQL_PASSWORD: Passw0rd
+    volumes:
+      - db_data:/var/lib/mysql
+
+  testapp:
+    image: site
+    container_name: testapp
+    environment:
+      DB_TYPE: maria
+      DB_HOST: db
+      DB_NAME: testdb
+      DB_USER: test
+      DB_PASS: Passw0rd
+      DB_PORT: 3306
+    ports:
+      - "8080:8000"
+
+volumes:
+  db_data:
+EOF
+docker compose -f site.yml up -d
+docker exec -it db mysql -u root -pPassw0rd -e "CREATE DATABASE testdb; CREATE USER 'test'@'%' IDENTIFIED BY 'Passw0rd'; GRANT ALL PRIVILEGES ON testdb.* TO 'test'@'%'; FLUSH PRIVILEGES;"
+docker compose -f site.yml down && docker compose -f site.yml up -d
+```
+
+---
+
+# Развернуть веб-приложение HQ-SRV
+## HQ-SRV
+```bash
+apt-get update && apt-get install apache2 php8.2 apache2-mod_php8.2 mariadb-server php8.2-{opcache,curl,gd,intl,mysqli,xml,xmlrpc,ldap,zip,soap,mbstring,json,xmlreader,fileinfo,sodium} -y
+systemctl enable --now httpd2 mysqld
+mysql_secure_installation << EOF
+
+y
+y
+P@ssw0rd
+P@ssw0rd
+y
+y
+y
+y
+EOF
+mkdir /test
+mount -o loop /dev/sr0 /test
+mysql -e "CREATE DATABASE webdb;"
+mysql -e "CREATE USER 'webc'@'localhost' IDENTIFIED BY 'P@ssw0rd';"
+mysql -e "GRANT ALL PRIVILEGES ON webdb.* TO 'webc'@'localhost';"
+mysql -e "FLUSH PRIVILEGES;"
+iconv -f UTF-16LE -t UTF-8 /test/web/dump.sql > /tmp/dump_utf8.sql
+mariadb -u root -p webdb < /tmp/dump_utf8.sql
+chmod 777 /var/www/html
+cp /test/web/index.php /var/www/html
+cp /test/web/logo.png /var/www/html
+rm -f /var/www/html/index.html
+chown apache2:apache2 /var/www/html
+systemctl restart httpd2
+
+```
