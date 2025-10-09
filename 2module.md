@@ -6,7 +6,7 @@ systemctl restart dnsmasq
 ```
 ## BR-SRV
 ```bash
-echo nameserver 8.8.8.8 >> /etc/resolv.conf && apt-get update && apt-get install wget dos2unix task-samba-dc -y
+apt-get update && apt-get install wget dos2unix task-samba-dc -y
 sleep 3
 echo nameserver 192.168.1.10 >> /etc/resolv.conf
 sleep 2
@@ -51,8 +51,6 @@ ldbmodify -v -H /var/lib/samba/private/sam.ldb ntGen.ldif
 ```
 ## HQ-CLI
 ```bash
-sed -i 's/BOOTPROTO=static/BOOTPROTO=dhcp/' /etc/net/ifaces/ens20/options
-systemctl restart network
 apt-get update && apt-get install bind-utils -y
 system-auth write ad AU-TEAM.IRPO cli AU-TEAM 'administrator' 'P@ssw0rd'
 reboot
@@ -95,6 +93,7 @@ apt-get update && apt-get install ansible sshpass -y
 echo -e "[s]\nHQ-SRV ansible_host=192.168.1.10\nHQ-CLI ansible_host=192.168.2.10\n[s:vars]\nansible_user=remote_user\nansible_port=2026\nansible_password=P@ssw0rd\n[r]\nHQ-RTR ansible_host=192.168.1.1\nBR-RTR ansible_host=192.168.3.1\n[r:vars]\nansible_user=net_admin\nansible_password=P@ssw0rd\nansible_connection=network_cli\nansible_network_os=ios" > /etc/ansible/hosts
 rm -f /etc/ansible/ansible.cfg
 echo -e "[defaults]\ninterpreter_python=auto_silent\nhost_key_checking=false" > /etc/ansible/ansible.cfg
+ansible all -m ping
 ```
 
 # Развернуть веб-приложение в docker BR-SRV
