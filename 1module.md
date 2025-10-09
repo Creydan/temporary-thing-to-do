@@ -26,117 +26,6 @@ timedatectl set-timezone Asia/Yekaterinburg
 
 ---
 
-# HQ-SRV
-## Базовая настройка
-```bash
-hostnamectl set-hostname hq-srv.au-team.irpo; exec bash
-mkdir /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
-echo 192.168.1.10/27 > /etc/net/ifaces/ens20/ipv4address
-echo default via 192.168.1.1 > /etc/net/ifaces/ens20/ipv4route
-systemctl restart network 
-```
-## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
-```bash
-sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-useradd sshuser -u 2026
-usermod -aG root sshuser
-passwd sshuser
-# ПАРОЛЬ ВВОДИТСЯ, АВТОМАТИЧЕСКИ НЕ СДЕЛАНО ПОКА
-```
-## Настройка безопасного удалённого доступа
-```bash
-echo -e "Port 2026\nAllowUsers sshuser\nMaxAuthTries 2\nBanner /etc/openssh/banner" >> /etc/openssh/sshd_config
-echo "Authorized access only!" > /etc/openssh/banner
-systemctl restart sshd
-```
-## Настройка динамической трансляции адресов
-```bash
-echo nameserver 8.8.8.8 > /etc/resolv.conf
-```
-## Настройте DNS-сервер на сервере HQ-SRV
-```bash
-systemctl disable --now bind
-apt-get update
-apt-get install dnsmasq -y
-systemctl enable --now dnsmasq
-sed -i '/^[@#]/ d' /etc/dnsmasq.conf && sed -i '/^$/d' /etc/dnsmasq.conf
-echo -e "\nno-resolv\ndomain=au-team.irpo\nserver=8.8.8.8\ninterface=*\n" >> /etc/dnsmasq.conf
-echo -e "address=/hq-rtr.au-team.irpo/192.168.1.1\nptr-record=1.1.168.192.in-addr.arpa,hq-rtr.au-team.irpo" >> /etc/dnsmasq.conf
-echo -e "address=/br-rtr.au-team.irpo/192.168.2.1" >> /etc/dnsmasq.conf
-echo -e "address=/hq-srv.au-team.irpo/192.168.1.10\nptr-record=10.1.168.192.in-addr.arpa,hq-srv.au-team.irpo" >> /etc/dnsmasq.conf
-echo -e "address=/hq-cli.au-team.irpo/192.168.2.10\nptr-record=10.2.168.192.in-addr.arpa,hq-cli.au-team.irpo" >> /etc/dnsmasq.conf
-echo -e "address=/br-srv.au-team.irpo/192.168.3.10" >> /etc/dnsmasq.conf
-echo -e "address=/docker.au-team.irpo/172.16.2.1\naddress=/web.au-team.irpo/172.16.1.1" >> /etc/dnsmasq.conf
-```
-## Настроить часовой пояс на всех устройствах
-```bash
-timedatectl set-timezone Asia/Yekaterinburg 
-```
-
----
-
-# BR-SRV
-## Базовая настройка
-```bash
-hostnamectl set-hostname br-srv.au-team.irpo; exec bash
-mkdir /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
-echo 192.168.3.10/28 > /etc/net/ifaces/ens20/ipv4address
-echo default via 192.168.3.1 > /etc/net/ifaces/ens20/ipv4route
-systemctl restart network 
-```
-## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
-```bash
-sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-useradd sshuser -u 2026
-usermod -aG root sshuser
-passwd sshuser
-# ПАРОЛЬ ВВОДИТСЯ, АВТОМАТИЧЕСКИ НЕ СДЕЛАНО ПОКА
-```
-## Настройка безопасного удалённого доступа
-```bash
-echo -e "Port 2026\nAllowUsers sshuser\nMaxAuthTries 2\nBanner /etc/openssh/banner" >> /etc/openssh/sshd_config
-echo "Authorized access only!" > /etc/openssh/banner
-systemctl restart sshd
-```
-## Настройка динамической трансляции адресов
-```bash
-echo nameserver 8.8.8.8 > /etc/resolv.conf
-```
-## Настроить часовой пояс на всех устройствах
-```bash
-timedatectl set-timezone Asia/Yekaterinburg 
-```
-
----
-
-# HQ-CLI
-## Базовая настройка
-```bash
-hostnamectl set-hostname hq-cli.au-team.irpo; exec bash
-rm -rf /etc/net/ifaces/ens18
-mkdir /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
-echo 192.168.2.10/28 > /etc/net/ifaces/ens20/ipv4address
-echo default via 192.168.2.1 > /etc/net/ifaces/ens20/ipv4route
-```
-## Настройка динамической трансляции адресов
-```bash
-echo nameserver 8.8.8.8 > /etc/resolv.conf
-```
-## Настройка протокола динамической конфигурации хостов
-```bash
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=dhcp\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
-systemctl restart network 
-```
-## Настроить часовой пояс на всех устройствах
-```bash
-timedatectl set-timezone Asia/Yekaterinburg 
-```
-
----
-
 # HQ-RTR
 ## Базовая настройка
 ```cisco
@@ -359,4 +248,113 @@ en
 conf t 
 ntp timezone utc+5 
 exit
+```
+
+---
+
+# HQ-SRV
+## Базовая настройка
+```bash
+hostnamectl set-hostname hq-srv.au-team.irpo; exec bash
+mkdir /etc/net/ifaces/ens20
+echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
+echo 192.168.1.10/27 > /etc/net/ifaces/ens20/ipv4address
+echo default via 192.168.1.1 > /etc/net/ifaces/ens20/ipv4route
+systemctl restart network 
+```
+## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
+```bash
+sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+useradd sshuser -u 2026
+usermod -aG root sshuser
+echo -e "P@ssw0rd\nP@ssw0rd" | passwd sshuser
+```
+## Настройка безопасного удалённого доступа
+```bash
+echo -e "Port 2026\nAllowUsers sshuser\nMaxAuthTries 2\nBanner /etc/openssh/banner" >> /etc/openssh/sshd_config
+echo "Authorized access only!" > /etc/openssh/banner
+systemctl restart sshd
+```
+## Настройка динамической трансляции адресов
+```bash
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+```
+## Настройте DNS-сервер на сервере HQ-SRV
+```bash
+systemctl disable --now bind
+apt-get update
+apt-get install dnsmasq -y
+systemctl enable --now dnsmasq
+sed -i '/^[@#]/ d' /etc/dnsmasq.conf && sed -i '/^$/d' /etc/dnsmasq.conf
+echo -e "\nno-resolv\ndomain=au-team.irpo\nserver=8.8.8.8\ninterface=*\n" >> /etc/dnsmasq.conf
+echo -e "address=/hq-rtr.au-team.irpo/192.168.1.1\nptr-record=1.1.168.192.in-addr.arpa,hq-rtr.au-team.irpo" >> /etc/dnsmasq.conf
+echo -e "address=/br-rtr.au-team.irpo/192.168.2.1" >> /etc/dnsmasq.conf
+echo -e "address=/hq-srv.au-team.irpo/192.168.1.10\nptr-record=10.1.168.192.in-addr.arpa,hq-srv.au-team.irpo" >> /etc/dnsmasq.conf
+echo -e "address=/hq-cli.au-team.irpo/192.168.2.10\nptr-record=10.2.168.192.in-addr.arpa,hq-cli.au-team.irpo" >> /etc/dnsmasq.conf
+echo -e "address=/br-srv.au-team.irpo/192.168.3.10" >> /etc/dnsmasq.conf
+echo -e "address=/docker.au-team.irpo/172.16.2.1\naddress=/web.au-team.irpo/172.16.1.1" >> /etc/dnsmasq.conf
+```
+## Настроить часовой пояс на всех устройствах
+```bash
+timedatectl set-timezone Asia/Yekaterinburg 
+```
+
+---
+
+# BR-SRV
+## Базовая настройка
+```bash
+hostnamectl set-hostname br-srv.au-team.irpo; exec bash
+mkdir /etc/net/ifaces/ens20
+echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
+echo 192.168.3.10/28 > /etc/net/ifaces/ens20/ipv4address
+echo default via 192.168.3.1 > /etc/net/ifaces/ens20/ipv4route
+systemctl restart network 
+```
+## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
+```bash
+sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+useradd sshuser -u 2026
+usermod -aG root sshuser
+echo -e "P@ssw0rd\nP@ssw0rd" | passwd sshuser
+```
+## Настройка безопасного удалённого доступа
+```bash
+echo -e "Port 2026\nAllowUsers sshuser\nMaxAuthTries 2\nBanner /etc/openssh/banner" >> /etc/openssh/sshd_config
+echo "Authorized access only!" > /etc/openssh/banner
+systemctl restart sshd
+```
+## Настройка динамической трансляции адресов
+```bash
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+```
+## Настроить часовой пояс на всех устройствах
+```bash
+timedatectl set-timezone Asia/Yekaterinburg 
+```
+
+---
+
+# HQ-CLI
+## Базовая настройка
+```bash
+hostnamectl set-hostname hq-cli.au-team.irpo; exec bash
+rm -rf /etc/net/ifaces/ens18
+mkdir /etc/net/ifaces/ens20
+echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
+echo 192.168.2.10/28 > /etc/net/ifaces/ens20/ipv4address
+echo default via 192.168.2.1 > /etc/net/ifaces/ens20/ipv4route
+```
+## Настройка динамической трансляции адресов
+```bash
+echo nameserver 8.8.8.8 > /etc/resolv.conf
+```
+## Настройка протокола динамической конфигурации хостов
+```bash
+echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=dhcp\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
+systemctl restart network 
+```
+## Настроить часовой пояс на всех устройствах
+```bash
+timedatectl set-timezone Asia/Yekaterinburg 
 ```
