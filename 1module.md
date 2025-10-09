@@ -66,7 +66,7 @@ echo -e "address=/hq-rtr.au-team.irpo/192.168.1.1\nptr-record=1.1.168.192.in-add
 echo -e "address=/br-rtr.au-team.irpo/192.168.2.1" >> /etc/dnsmasq.conf
 echo -e "address=/hq-srv.au-team.irpo/192.168.1.10\nptr-record=10.1.168.192.in-addr.arpa,hq-srv.au-team.irpo" >> /etc/dnsmasq.conf
 echo -e "address=/hq-cli.au-team.irpo/192.168.2.10\nptr-record=10.2.168.192.in-addr.arpa,hq-cli.au-team.irpo" >> /etc/dnsmasq.conf
-echo -e "address=/br-srv.au-team.irpo/192.168.5.5" >> /etc/dnsmasq.conf
+echo -e "address=/br-srv.au-team.irpo/192.168.3.10" >> /etc/dnsmasq.conf
 echo -e "address=/docker.au-team.irpo/172.16.2.1\naddress=/web.au-team.irpo/172.16.1.1" >> /etc/dnsmasq.conf
 ```
 ## Настроить часовой пояс на всех устройствах
@@ -82,8 +82,8 @@ timedatectl set-timezone Asia/Yekaterinburg
 hostnamectl set-hostname br-srv.au-team.irpo; exec bash
 mkdir /etc/net/ifaces/ens20
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
-echo 192.168.5.5/28 > /etc/net/ifaces/ens20/ipv4address
-echo default via 192.168.5.1 > /etc/net/ifaces/ens20/ipv4route
+echo 192.168.3.10/28 > /etc/net/ifaces/ens20/ipv4address
+echo default via 192.168.3.1 > /etc/net/ifaces/ens20/ipv4route
 systemctl restart network 
 ```
 ## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
@@ -290,7 +290,7 @@ connect ip interface int0
 exit
 exit
 int int1
-ip addr 192.168.5.1/28
+ip addr 192.168.3.1/28
 exit
 port te1
 service-instance te1/int1
@@ -330,7 +330,7 @@ en
 conf t
 router ospf 1
 network 172.16.0.0/30 area 0
-network 192.168.5.0/28 area 0
+network 192.168.3.0/28 area 0
 passive-interface default
 no passive-interface tunnel.0
 area 0 authentication
@@ -348,7 +348,7 @@ interface int0
 ip nat outside
 exit
 ip name-server 8.8.8.8
-ip nat pool np 192.168.5.1-192.168.5.254
+ip nat pool np 192.168.3.1-192.168.3.254
 ip nat source dynamic inside-to-outside pool np overload interface int0
 end
 wr mem
