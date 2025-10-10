@@ -6,6 +6,9 @@ systemctl restart dnsmasq
 ```
 ## BR-SRV
 ```bash
+if ! grep -q '^nameserver 8\.8\.8\.8$' /etc/resolv.conf; then
+    echo 'nameserver 8.8.8.8' | sudo tee -a /etc/resolv.conf
+fi
 apt-get update && apt-get install wget dos2unix task-samba-dc -y
 sleep 3
 echo nameserver 192.168.1.10 >> /etc/resolv.conf
@@ -51,6 +54,8 @@ ldbmodify -v -H /var/lib/samba/private/sam.ldb ntGen.ldif
 ```
 ## HQ-CLI
 ```bash
+sed -i 's/BOOTPROTO=static/BOOTPROTO=dhcp/' /etc/net/ifaces/ens20/options
+systemctl restart network
 apt-get update && apt-get install bind-utils -y
 system-auth write ad AU-TEAM.IRPO cli AU-TEAM 'administrator' 'P@ssw0rd'
 reboot
