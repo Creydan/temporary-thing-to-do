@@ -202,7 +202,7 @@ mkdir /test
 mount -o loop /dev/sr0 /test
 docker load -i /test/docker/mariadb_latest.tar
 docker load -i /test/docker/site_latest.tar
-cat << EOF > /root/wiki.yml
+cat << EOF > /root/site.yml
 services:
   db:
     image: mariadb
