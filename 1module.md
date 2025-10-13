@@ -263,7 +263,7 @@ echo 192.168.1.10/27 > /etc/net/ifaces/ens20/ipv4address
 echo default via 192.168.1.1 > /etc/net/ifaces/ens20/ipv4route
 systemctl restart network 
 ```
-## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
+## Создание локальный учетных записей
 ```bash
 sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 useradd sshuser -u 2026
@@ -312,7 +312,7 @@ echo 192.168.3.10/28 > /etc/net/ifaces/ens20/ipv4address
 echo default via 192.168.3.1 > /etc/net/ifaces/ens20/ipv4route
 systemctl restart network 
 ```
-## Создание локальный учетных записей (НЕ ПОЛНОСТЬЮ АВТОМАТИЗИРОВАННО!)
+## Создание локальный учетных записей
 ```bash
 sed -i '/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 useradd sshuser -u 2026
