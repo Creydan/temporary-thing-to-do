@@ -234,7 +234,7 @@ EOF
 docker compose -f site.yml up -d
 sleep 1
 docker exec -it db mysql -u root -pPassw0rd -e "CREATE DATABASE testdb; CREATE USER 'test'@'%' IDENTIFIED BY 'Passw0rd'; GRANT ALL PRIVILEGES ON testdb.* TO 'test'@'%'; FLUSH PRIVILEGES;"
-sleep 1
+sleep 3
 docker compose -f site.yml down && docker compose -f site.yml up -d
 ```
 
