@@ -94,7 +94,7 @@ mount -v
 # Настроить сетевую файловую систему
 ## HQ-SRV
 ```bash
-apt-get update && install nfs-server -y
+apt-get update && apt-get install nfs-server -y
 mkdir /raid/nfs
 chown 99:99 /raid/nfs
 chmod 777 /raid/nfs
