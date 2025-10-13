@@ -232,12 +232,110 @@ mysql -e "CREATE USER 'webc'@'localhost' IDENTIFIED BY 'P@ssw0rd';"
 mysql -e "GRANT ALL PRIVILEGES ON webdb.* TO 'webc'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 iconv -f UTF-16LE -t UTF-8 /test/web/dump.sql > /tmp/dump_utf8.sql
-mariadb -u root -p webdb < /tmp/dump_utf8.sql
+mariadb -u root -pP@ssw0rd webdb < /tmp/dump_utf8.sql
 chmod 777 /var/www/html
 cp /test/web/index.php /var/www/html
 cp /test/web/logo.png /var/www/html
 rm -f /var/www/html/index.html
 chown apache2:apache2 /var/www/html
 systemctl restart httpd2
-
 ```
+
+---
+
+# Сконфигурировать статическую трансляцию портов
+## BR-RTR
+```cisco
+en
+conf t
+ip nat source static tcp 192.168.5.5 80 172.16.2.2 8080
+ip nat source static tcp 192.168.5.5 2026 172.16.2.2 2026
+end
+wr mem
+```
+## HQ-RTR
+```cisco
+en
+conf t
+ip nat source static tcp 192.168.1.10 2026 172.16.1.2 2026
+end
+wr mem
+```
+# Настроить веб-сервер nginx как обратный прокси-сервер
+## ISP
+```bash
+apt-get update && apt-get install nginx
+rm -f /etc/nginx/sites-available.d/default.conf
+cat << EOF > /etc/nginx/sites-available.d/proxy.conf
+server {
+        listen 80;
+        server_name docker.au-team.irpo;
+        location / {
+                proxy_pass http://172.16.2.2:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
+}
+server {
+        listen 80;
+        server_name web.au-team.irpo;
+        location / {
+                proxy_pass http://172.16.1.2:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
+}
+EOF
+ln -s /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/
+systemctl enable --now nginx
+```
+# Настроить web-based аутентификацию
+## ISP
+```bash
+apt-get update && apt-get install apache2-htpasswd -y
+htpasswd -bc /etc/nginx/.htpasswd WEB P@ssw0rd
+cat << EOF > /etc/nginx/sites-available.d/proxy.conf
+server {
+        listen 80;
+        server_name docker.au-team.irpo;
+        location / {
+                proxy_pass http://172.16.2.2:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $remote_addr;
+        }
+}
+server {
+        listen 80;
+        server_name web.au-team.irpo;
+        auth_basic "";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        location / {
+                proxy_pass http://172.16.1.2:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $remote_addr;
+        }
+}
+EOF
+systemctl restart nginx
+```
+# Установка Яндекс браузера
+## HQ-CLI
+```bash
+echo trying to download an app...
+sleep 25
+echo analysing the download proccess
+sleep 10
+echo search a need app
+sleep 5
+echo one more try...
+sleep 2
+echo success!
+apt-get install yandex-browser -y
+echo the hardest app was download!
+```
+
+
+
+
