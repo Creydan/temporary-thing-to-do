@@ -239,6 +239,10 @@ cp /test/web/logo.png /var/www/html
 rm -f /var/www/html/index.html
 chown apache2:apache2 /var/www/html
 systemctl restart httpd2
+sed -i "s/\$servername = .*;/\$servername = 'localhost';/" /var/www/html/index.php
+sed -i "s/\$dbname = .*;/\$dbname = 'webdb';/" /var/www/html/index.php
+sed -i "s/\$password = .*;/\$password = 'P@ssw0rd';/" /var/www/html/index.php
+sed -i "s/\$username = .*;/\$username = 'webc';/" /var/www/html/index.php
 ```
 
 ---
