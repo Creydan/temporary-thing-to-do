@@ -113,7 +113,7 @@ network 192.168.2.0/28 area 0
 passive-interface default
 no passive-interface tunnel.0
 area 0 authentication
-exit
+end
 wr mem
 ```
 ## Настройка динамической трансляции адресов
@@ -150,7 +150,7 @@ exit
 exit
 interface int2 
 dhcp-server 1 
-exit
+end
 wr mem
 ```
 ## Настроить часовой пояс на всех устройствах
@@ -158,7 +158,8 @@ wr mem
 en 
 conf t 
 ntp timezone utc+5 
-exit
+end
+wr mem
 ```
 
 ---
@@ -168,7 +169,7 @@ exit
 ```cisco
 en
 conf t
-hostname hq-rtr
+hostname br-rtr
 ip domain-name au-team.irpo
 int int0
 ip addr 172.16.2.2/28
@@ -224,7 +225,7 @@ network 192.168.3.0/28 area 0
 passive-interface default
 no passive-interface tunnel.0
 area 0 authentication
-exit
+end
 wr mem
 ```
 ## Настройка динамической трансляции адресов
@@ -248,7 +249,8 @@ wr mem
 en 
 conf t 
 ntp timezone utc+5 
-exit
+end
+wr mem
 ```
 
 ---
