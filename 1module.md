@@ -9,6 +9,7 @@ mkdir /etc/net/ifaces/ens2{0,1,2}
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=dhcp\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens21/options
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens22/options
+cd /etc/net/ifaces
 echo 172.16.1.1/28 > ens21/ipv4address
 echo 172.16.2.1/28 > ens22/ipv4address
 sed -i '/net.ipv4.ip_forward/s/0/1/g' /etc/net/sysctl.conf
