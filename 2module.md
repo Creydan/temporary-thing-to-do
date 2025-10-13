@@ -232,15 +232,7 @@ volumes:
   db_data:
 EOF
 docker compose -f site.yml up -d
-sleep 3
-cat << EOF > tmp_dckr.sh
-#!bin/bash
-docker exec -it db mysql -u root -pPassw0rd -e "CREATE DATABASE testdb; CREATE USER 'test'@'%' IDENTIFIED BY 'Passw0rd'; GRANT ALL PRIVILEGES ON testdb.* TO 'test'@'%'; FLUSH PRIVILEGES;"
-sleep 3
-EOF
-chmod +x tmp_dckr.sh
-./tmp_dckr.sh
-docker compose -f site.yml down && docker compose -f site.yml up -d
+docker compose up -d && sleep 5 && docker exec -it db mysql -u root -p'Passw0rd' -e "CREATE DATABASE IF NOT EXISTS testdb; CREATE USER 'test'@'%' IDENTIFIED BY 'Passw0rd'; GRANT ALL PRIVILEGES ON testdb.* TO 'test'@'%'; FLUSH PRIVILEGES;"
 ```
 
 ---
