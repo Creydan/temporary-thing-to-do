@@ -12,6 +12,7 @@ echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/if
 echo 172.16.1.1/28 > ens21/ipv4address
 echo 172.16.2.1/28 > ens22/ipv4address
 sed -i '/net.ipv4.ip_forward/s/0/1/g' /etc/net/sysctl.conf
+systemctl restart network
 apt-get update && apt-get install iptables -y
 iptables -t nat -A POSTROUTING -o ens20 -s 0/0 -j MASQUERADE
 iptables-save > /etc/sysconfig/iptables
