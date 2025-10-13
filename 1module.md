@@ -345,6 +345,7 @@ mkdir /etc/net/ifaces/ens20
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
 echo 192.168.2.10/28 > /etc/net/ifaces/ens20/ipv4address
 echo default via 192.168.2.1 > /etc/net/ifaces/ens20/ipv4route
+systemctl restart network
 ```
 ## Настройка динамической трансляции адресов
 ```bash
