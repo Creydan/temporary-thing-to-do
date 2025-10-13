@@ -251,17 +251,19 @@ sed -i "s/\$username = .*;/\$username = 'webc';/" /var/www/html/index.php
 ## BR-RTR
 ```cisco
 en
-conf t
-ip nat source static tcp 192.168.5.5 80 172.16.2.2 8080
-ip nat source static tcp 192.168.5.5 2026 172.16.2.2 2026
+conf
+ip nat source static tcp 192.168.3.10 8080 172.16.2.5 8080
+ip nat source static tcp 192.168.3.10 2026 172.16.2.5 2026
 end
 wr mem
 ```
 ## HQ-RTR
 ```cisco
 en
-conf t
-ip nat source static tcp 192.168.1.10 2026 172.16.1.2 2026
+conf
+ip nat source static tcp 192.168.1.10 80 172.16.1.4 8080
+ip nat source static tcp 192.168.1.10 2026 172.16.1.4 2026
+ip nat source static tcp 192.168.2.10 2222 172.16.1.4 2222
 end
 wr mem
 ```
@@ -269,7 +271,6 @@ wr mem
 ## ISP
 ```bash
 apt-get update && apt-get install nginx
-rm -f /etc/nginx/sites-available.d/default.conf
 cat << EOF > /etc/nginx/sites-available.d/proxy.conf
 server {
         listen 80;
@@ -290,8 +291,10 @@ server {
         }
 }
 EOF
-ln -s /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/
+ln -sf /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/
+nginx -t
 systemctl enable --now nginx
+systemctl restart nginx
 ```
 # Настроить web-based аутентификацию
 ## ISP
@@ -300,29 +303,32 @@ apt-get update && apt-get install apache2-htpasswd -y
 htpasswd -bc /etc/nginx/.htpasswd WEB P@ssw0rd
 cat << EOF > /etc/nginx/sites-available.d/proxy.conf
 server {
-        listen 80;
-        server_name docker.au-team.irpo;
-        location / {
-                proxy_pass http://172.16.2.2:8080;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $remote_addr;
-        }
+    listen 80;
+    server_name web.au-team.irpo;
+    
+    auth_basic "Restricted Access";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    
+    location / {
+        proxy_pass http://172.16.1.4:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
 }
+
 server {
-        listen 80;
-        server_name web.au-team.irpo;
-        auth_basic "";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-        location / {
-                proxy_pass http://172.16.1.2:8080;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $remote_addr;
-        }
+    listen 80;
+    server_name docker.au-team.irpo;
+    
+    location / {
+        proxy_pass http://172.16.2.5:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
 }
 EOF
 systemctl restart nginx
+nginx -t
 ```
 # Установка Яндекс браузера
 ## HQ-CLI
