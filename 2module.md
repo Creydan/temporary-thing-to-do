@@ -252,8 +252,8 @@ sed -i "s/\$username = .*;/\$username = 'webc';/" /var/www/html/index.php
 ```cisco
 en
 conf
-ip nat source static tcp 192.168.3.10 8080 172.16.2.5 8080
-ip nat source static tcp 192.168.3.10 2026 172.16.2.5 2026
+ip nat source static tcp 192.168.3.10 8080 172.16.2.2 8080
+ip nat source static tcp 192.168.3.10 2026 172.16.2.2 2026
 end
 wr mem
 ```
@@ -261,9 +261,9 @@ wr mem
 ```cisco
 en
 conf
-ip nat source static tcp 192.168.1.10 80 172.16.1.4 8080
-ip nat source static tcp 192.168.1.10 2026 172.16.1.4 2026
-ip nat source static tcp 192.168.2.10 2222 172.16.1.4 2222
+ip nat source static tcp 192.168.1.10 80 172.16.1.2 8080
+ip nat source static tcp 192.168.1.10 2026 172.16.1.2 2026
+ip nat source static tcp 192.168.2.10 2222 172.16.1.2 2222
 end
 wr mem
 ```
@@ -273,22 +273,23 @@ wr mem
 apt-get update && apt-get install nginx
 cat << EOF > /etc/nginx/sites-available.d/proxy.conf
 server {
-        listen 80;
-        server_name docker.au-team.irpo;
-        location / {
-                proxy_pass http://172.16.2.2:8080;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-        }
+    listen 80;
+    server_name web.au-team.irpo;
+    location / {
+        proxy_pass http://172.16.1.2:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
 }
+
 server {
-        listen 80;
-        server_name web.au-team.irpo;
-        location / {
-                proxy_pass http://172.16.1.2:8080;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-        }
+    listen 80;
+    server_name docker.au-team.irpo;
+    location / {
+        proxy_pass http://172.16.2.2:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+    }
 }
 EOF
 ln -sf /etc/nginx/sites-available.d/proxy.conf /etc/nginx/sites-enabled.d/
@@ -310,7 +311,7 @@ server {
     auth_basic_user_file /etc/nginx/.htpasswd;
     
     location / {
-        proxy_pass http://172.16.1.4:8080;
+        proxy_pass http://172.16.1.2:8080;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
     }
@@ -321,7 +322,7 @@ server {
     server_name docker.au-team.irpo;
     
     location / {
-        proxy_pass http://172.16.2.5:8080;
+        proxy_pass http://172.16.2.2:8080;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
     }
