@@ -1,6 +1,6 @@
 # ISP
 ```bash
-hostnamectl set-hostname isp; exec bash
+hostnamectl set-hostname isp
 mkdir /etc/net/ifaces/ens2{0,1,2}
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=dhcp\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens20/options
 echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens21/options
@@ -15,7 +15,8 @@ iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables
 systemctl restart network iptables
 apt-get install tzdata
-timedatectl set-timezone Asia/Yekaterinburg 
+timedatectl set-timezone Asia/Yekaterinburg
+exec bash
 ```
 
 ---
@@ -214,13 +215,13 @@ echo -e "address=/hq-srv.au-team.irpo/192.168.1.10\nptr-record=10.1.168.192.in-a
 echo -e "address=/hq-cli.au-team.irpo/192.168.2.10\nptr-record=10.2.168.192.in-addr.arpa,hq-cli.au-team.irpo" >> /etc/dnsmasq.conf
 echo -e "address=/br-srv.au-team.irpo/192.168.3.10" >> /etc/dnsmasq.conf
 echo -e "address=/docker.au-team.irpo/172.16.2.1\naddress=/web.au-team.irpo/172.16.1.1" >> /etc/dnsmasq.conf
-timedatectl set-timezone Asia/Yekaterinburg 
+systemctl restart dnsmasq
+timedatectl set-timezone Asia/Yekaterinburg
 ```
 
 ---
 
 # BR-SRV
-## Базовая настройка
 ```bash
 hostnamectl set-hostname br-srv.au-team.irpo; exec bash
 mkdir /etc/net/ifaces/ens20
@@ -242,7 +243,6 @@ timedatectl set-timezone Asia/Yekaterinburg
 ---
 
 # HQ-CLI
-## Базовая настройка
 ```bash
 hostnamectl set-hostname hq-cli.au-team.irpo; exec bash
 rm -rf /etc/net/ifaces/ens18
