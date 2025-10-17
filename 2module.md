@@ -214,7 +214,7 @@ docker exec -it db mysql -u root -p'Passw0rd' -e "CREATE DATABASE IF NOT EXISTS 
 # Развернуть веб-приложение HQ-SRV
 ## HQ-SRV
 ```bash
-apt-get update && apt-get install apache2 php8.2 apache2-mod_php8.2 mariadb-server php8.2-{opcache,curl,gd,intl,mysqli,xml,xmlrpc,ldap,zip,soap,mbstring,json,xmlreader,fileinfo,sodium} -y
+apt-get update && apt-get install apache2 php8.2 apache2-mod_php8.2 mariadb-server php8.2-mysqli -y
 systemctl enable --now httpd2 mysqld
 mysql_secure_installation << EOF
 
